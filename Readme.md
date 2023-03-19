@@ -19,5 +19,6 @@ SerialBusiness serialBusiness = new SerialBusiness.Builder(path, speed)
         .build();
 ```
 demo工程界面效果：
+[图片](./serial_port_demo.png)
 
 github：https://github.com/dongpingwang/AndroidSerialPortTool
