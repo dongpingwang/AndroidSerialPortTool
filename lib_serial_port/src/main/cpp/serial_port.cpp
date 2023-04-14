@@ -11,17 +11,25 @@ static jfieldID field_context;
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_wdp_serial_SerialPort_native_1open(JNIEnv *env, jobject thiz, jobject fileDescriptor,
-                                            jint baudrate) {
+Java_com_wdp_serial_SerialPort_native_1open(JNIEnv *env, jobject thiz, jstring path,
+                                            jint baudrate, int flag) {
+
+    const char *pathStr = env->GetStringUTFChars(path, nullptr);
+    int fd = open(pathStr, O_RDWR | O_NOCTTY | flag);
+    if (fd < 0) {
+        LOGD(LOG_TAG, "could not open %s", pathStr);
+        env->ReleaseStringUTFChars(path, pathStr);
+        return;
+    }
+    LOGD(LOG_TAG, "open() fd = %d", fd);
+    env->ReleaseStringUTFChars(path, pathStr);
+
     speed_t speed = getSpeed(baudrate);
     if (speed < 0) {
         jniThrowException(env, "java/lang/IllegalArgumentException",
                           "Unsupported serial port speed");
         return;
     }
-    jint fd = env->GetIntField(fileDescriptor,
-                               env->GetFieldID(env->GetObjectClass(fileDescriptor), "descriptor",
-                                               "I"));
     fd = fcntl(fd, F_DUPFD_CLOEXEC, 0);
     if (fd < 0) {
         jniThrowException(env, "java/io/IOException", "Could not open serial port");
@@ -31,7 +39,7 @@ Java_com_wdp_serial_SerialPort_native_1open(JNIEnv *env, jobject thiz, jobject f
                                     "I");
     env->SetIntField(thiz, field_context, fd);
 
-    struct termios tio;
+    struct termios tio{};
     if (tcgetattr(fd, &tio)) {
         memset(&tio, 0, sizeof(tio));
     }

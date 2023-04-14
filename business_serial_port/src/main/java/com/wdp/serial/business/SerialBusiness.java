@@ -1,6 +1,8 @@
-package com.wdp.serial;
+package com.wdp.serial.business;
 
 import android.util.Log;
+
+import com.wdp.serial.SerialPort;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;

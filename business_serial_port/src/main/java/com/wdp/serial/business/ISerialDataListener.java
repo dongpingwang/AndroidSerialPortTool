@@ -1,4 +1,4 @@
-package com.wdp.serial;
+package com.wdp.serial.business;
 
 /**
  * 作者：王东平

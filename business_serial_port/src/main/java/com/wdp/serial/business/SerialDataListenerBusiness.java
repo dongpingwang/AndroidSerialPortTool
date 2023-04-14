@@ -1,10 +1,8 @@
-package com.wdp.serial;
+package com.wdp.serial.business;
 
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Message;
-
-import com.wdp.serial.util.DataUtils;
 
 import java.util.ArrayList;
 import java.util.List;

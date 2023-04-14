@@ -19,8 +19,8 @@ import android.widget.Toast;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.wdp.serial.SerialBusiness;
-import com.wdp.serial.util.DataUtils;
+import com.wdp.serial.business.SerialBusiness;
+import com.wdp.serial.business.DataUtils;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;

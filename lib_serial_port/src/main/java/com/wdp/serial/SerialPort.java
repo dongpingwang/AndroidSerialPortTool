@@ -1,8 +1,5 @@
 package com.wdp.serial;
 
-import android.os.ParcelFileDescriptor;
-
-import java.io.FileDescriptor;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
@@ -18,33 +15,29 @@ public class SerialPort {
         System.loadLibrary("serial");
     }
 
-    private ISerialManager serialManager;
-    private String path;
-    private int speed;
-    private ParcelFileDescriptor pfd;
+    private final String path;
+    private final int speed;
+
+    private final int flag;
+
     // use by jni code
     private int mNativeContext;
 
     public SerialPort(String path, int speed) {
+        this(path, speed, 0);
+    }
+
+    public SerialPort(String path, int speed, int flag) {
         this.path = path;
         this.speed = speed;
-        serialManager = new SerialService();
+        this.flag = flag;
     }
 
     public void open() throws IOException {
-        pfd = serialManager.openSerialPort(path);
-        if (pfd != null) {
-            native_open(pfd.getFileDescriptor(), speed);
-        } else {
-            throw new IOException("Could not open serial port " + path);
-        }
+        native_open(path, speed, flag);
     }
 
-    public void close() throws IOException {
-        if (pfd != null) {
-            pfd.close();
-            pfd = null;
-        }
+    public void close() {
         native_close();
     }
 
@@ -72,7 +65,7 @@ public class SerialPort {
         native_send_break();
     }
 
-    private native void native_open(FileDescriptor fd, int speed) throws IOException;
+    private native void native_open(String path, int speed, int flag) throws IOException;
 
     private native void native_close();
 

@@ -1,4 +1,4 @@
-package com.wdp.serial.util;
+package com.wdp.serial.business;
 
 import java.util.List;
 

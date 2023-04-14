@@ -1,0 +1,29 @@
+
+def copyReleaseOutput(Set<Task> tasks, Project project) {
+    def fromDir = "/build/outputs/apk/release"
+    for (task in tasks) {
+        def dir = project.getProjectDir().getAbsolutePath()
+        println "assemble release dir = $dir"
+        //我们目前存放打包后apk的目录
+        def apkDir = dir + fromDir
+        def file = new File(apkDir)
+
+        if (file.exists()) {
+            def isDelete = delete(apkDir)
+            println "del: $isDelete"
+        }
+        //在task执行完成之后
+        task.doLast {
+            if (file.exists()) {
+                //将生成的apk整个目录复制到我们指定位置
+                copy {
+                    println "copy dir = ${file.getAbsolutePath()}"
+                    from apkDir
+                    def toDir = rootProject.getRootDir().getAbsolutePath() + "/apk/"
+                    println "to dir = ${toDir}"
+                    into toDir
+                }
+            }
+        }
+    }
+}
