@@ -51,6 +51,11 @@ public class SerialPort {
         }
     }
 
+    public int read(byte[] buffer, int length) throws IOException {
+        return native_read_array(buffer, length);
+    }
+
+
     public void write(ByteBuffer buffer, int length) throws IOException {
         if (buffer.isDirect()) {
             native_write_direct(buffer, length);
@@ -59,6 +64,10 @@ public class SerialPort {
         } else {
             throw new IllegalArgumentException("buffer is not direct and has no array");
         }
+    }
+
+    public void write(byte[] buffer, int length) throws IOException {
+        native_write_array(buffer, length);
     }
 
     public void sendBreak() {
