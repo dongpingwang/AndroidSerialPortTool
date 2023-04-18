@@ -139,6 +139,13 @@ public class SerialBusiness implements Runnable {
         Log.d(TAG, "thread out");
     }
 
+    public void setReadCount(int readCount) {
+        this.readCount = readCount;
+    }
+
+    public void setTimeout(long timeout) {
+        this.timeout = timeout;
+    }
 
     public static class Builder {
 
