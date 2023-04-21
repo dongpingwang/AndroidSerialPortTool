@@ -6,6 +6,11 @@
 1.提供基本的串口操作，支持由自己去实现读取数据等业务
 2.默认实现一个串口操作业务，支持数据回调，支持数据拼接，支持超时等
 
+引入依赖:
+```groovy
+implementation 'io.github.dongpingwang:AndroidSerialPort:1.0.0'
+```
+
 使用方式1：
 ```java
 SerialPort serialPort = new SerialPort(path, speed)

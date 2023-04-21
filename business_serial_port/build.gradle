@@ -1,5 +1,7 @@
 apply plugin: 'com.android.library'
 apply plugin: 'com.kezong.fat-aar'
+apply from: "${getRootDir().absolutePath}/publish-maven.gradle"
+
 
 android {
     compileSdkVersion 30

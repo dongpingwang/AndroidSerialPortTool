@@ -1,0 +1,133 @@
+apply plugin: 'maven-publish'
+apply plugin: 'signing'
+
+def GROUP_ID = 'io.github.dongpingwang'//改成第一步申请上传权限时填写的Group Id
+def ARTIFACT_ID = 'AndroidSerialPort' //随意命名 你自己编写的第三方库的名称
+def VERSION_NAME = '1.0.0' //版本
+def DESCRIPTION = 'Android串口工具库'
+def GIT_LOCATION = 'github.com/dongpingwang/AndroidSerialPortTool' //github项目的链接
+def GIT_LOCATION_URL = 'https://' + GIT_LOCATION
+
+//仓库地址
+def MAVEN_URL = "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
+def nexusUsername = '' //Sonatype账号
+def nexusPassword = ''//Sonatype账号密码
+
+task sourceJar(type: Jar) {
+    if (hasAndroidPlugin()) {
+        println "======> Android"
+        from android.sourceSets.main.java.srcDirs
+        //noinspection GroovyAccessibility
+        archiveClassifier = 'sources'
+    } else if (hasJavaPlugin()) {
+        println "======> Java"
+        from sourceSets.main.allSource
+        //noinspection GroovyAccessibility
+        archiveClassifier = 'sources'
+    }
+}
+
+afterEvaluate { project ->
+    tasks.all { Task task ->
+        if(task.name.equalsIgnoreCase('publishAarPomPublishPublicationToSimpleCompressRepository')) {
+            task.dependsOn tasks.getByName('assemble')
+        }
+    }
+}
+
+def hasJavaPlugin() {
+    if (plugins.hasPlugin("java-library")) {
+        return true
+    }
+    return false
+}
+
+def hasAndroidPlugin() {
+    if (plugins.hasPlugin("com.android.library")) {
+        return true
+    }
+    return false
+}
+
+publishing {
+    println "======> ${project.name}"
+    println "====> the aar path is " + "$buildDir/outputs/aar/${project.name}-release.aar"
+    println "====>" + MAVEN_URL
+    println "====>" + VERSION_NAME
+    publications {
+        aarPomPublish(MavenPublication) {
+            groupId GROUP_ID
+            artifactId ARTIFACT_ID
+            version VERSION_NAME
+            artifact(sourceJar)
+            artifact("$buildDir/outputs/aar/${project.name}-release.aar")
+            pom {
+                packaging 'aar'
+                name = ARTIFACT_ID
+                description = DESCRIPTION
+                url = GIT_LOCATION_URL
+                licenses {
+                    license {
+                        name = 'The Apache License, Version 2.0'
+                        url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                    }
+                }
+                developers {
+                    developer {
+                        id = 'wdp'
+                        name = 'wdp'//用户名
+                        email = '927718579@qq.com'
+                    }
+                }
+                scm {
+                    connection = 'scm:git:' + GIT_LOCATION + '.git'
+                    developerConnection = 'scm:git:ssh://' + GIT_LOCATION + '.git'
+                    url = GIT_LOCATION_URL
+                }
+            }
+            pom.withXml {
+                //asNode().appendNode('测试').appendNode('自定义key', '自定义value')
+                def dependenciesNode = asNode().appendNode('dependencies')
+                configurations.implementation.allDependencies.each {
+                    if (it.version != "unspecified") { // 过滤项目内library引用
+                        println "=====>" + it.properties
+                        println "=====>" + it.group + "  " + it.name + it.version
+                        if (it.group == null || it.name == null || it.version == null) return
+                        if (it.group == group) return
+                        def dependencyNode = dependenciesNode.appendNode('dependency')
+                        dependencyNode.appendNode('groupId', it.group)
+                        dependencyNode.appendNode('artifactId', it.name)
+                        dependencyNode.appendNode('version', it.version)
+
+                        if (it.excludeRules.size() > 0) {
+                            def exclusionsNode = dependencyNode.appendNode('exclusions')
+                            it.excludeRules.each { rule ->
+                                def exclusionNode = exclusionsNode.appendNode('exclusion')
+                                exclusionNode.appendNode('groupId', rule.group)
+                                exclusionNode.appendNode('artifactId', rule.module)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    repositories {
+        maven {
+            name "simpleCompress"
+            url MAVEN_URL
+            credentials {
+                username = nexusUsername
+                password = nexusPassword
+            }
+        }
+    }
+}
+
+// signing 必须在 publishing 配置之后
+signing {
+    sign publishing.publications.aarPomPublish
+}
+
+
